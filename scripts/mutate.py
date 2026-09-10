@@ -92,6 +92,113 @@ MUTATIONS: tuple[Mutation, ...] = (
         caught_by=("tests/test_budget.py::"
                    "test_truncated_output_is_always_a_decodable_prefix_within_budget"),
     ),
+    # --- `F1-T1` · the radio seam. Eight shapes, each one a way the fake could lie ---
+    # about the radio and let a green suite ship a soak that cannot see degradation.
+    Mutation(
+        id="M5",
+        description=("a reboot no longer steps the uptime counter backwards — pass "
+                     "criterion 1 goes blind while every connection test stays green"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="""        self._uptime_s = 0
+        self._free_heap_bytes = self._initial_free_heap_bytes""",
+        new="        self._free_heap_bytes = self._initial_free_heap_bytes",
+        caught_by="tests/test_radio.py::test_shape_one_a_reboot_steps_the_uptime_counter_backwards",
+    ),
+    Mutation(
+        id="M6",
+        description=("report telemetry while disconnected instead of None — a gap stops "
+                     "being attributable, which is RR2 exactly"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="""                node_id=None,
+                node_count=None,
+                uptime_s=None,
+                free_heap_bytes=None,""",
+        new="""                node_id=self._node_id,
+                node_count=self._node_count,
+                uptime_s=self._uptime_s,
+                free_heap_bytes=self._free_heap_bytes,""",
+        caught_by="tests/test_radio.py::test_a_disconnect_produces_a_row_rather_than_a_gap",
+    ),
+    Mutation(
+        id="M7",
+        description=("accrue position packets while disconnected — the fake invents "
+                     "traffic a dead socket could not have delivered"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="""        if self._connected:
+            self._position_packets += self._position_rate""",
+        new="        self._position_packets += self._position_rate",
+        caught_by="tests/test_radio.py::test_position_packets_do_not_accrue_while_disconnected",
+    ),
+    Mutation(
+        id="M8",
+        description=("freeze uptime while disconnected — a dropped socket and a rebooted "
+                     "radio become indistinguishable, and F1-T4 has nothing to test"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="""    def _advance(self) -> None:
+        self._uptime_s += self._cadence_s""",
+        new="""    def _advance(self) -> None:
+        if self._connected:
+            self._uptime_s += self._cadence_s""",
+        caught_by=("tests/test_radio.py::"
+                   "test_uptime_keeps_climbing_through_a_disconnect_so_a_drop_is_not_a_reboot"),
+    ),
+    Mutation(
+        id="M9",
+        description=("drop the clamp at zero — free heap and node count go negative, and "
+                     "a test passes against code that never handled exhaustion"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="""        self._free_heap_bytes = max(0, self._free_heap_bytes + self._heap_drift)
+        self._node_count = max(0, self._node_count + self._node_drift)""",
+        new="""        self._free_heap_bytes = self._free_heap_bytes + self._heap_drift
+        self._node_count = self._node_count + self._node_drift""",
+        caught_by="tests/test_radio.py::test_shape_two_free_heap_trends_down_and_stops_at_zero",
+    ),
+    Mutation(
+        id="M10",
+        description=("off by one in recovery — the disconnect still recovers, one sample "
+                     "early, so every outage duration F1-T4 computes is 30s short"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="""        if self._recover_in <= 0:
+            self._connected = True
+            self._recover_in = None
+        else:
+            self._recover_in -= 1""",
+        new="""        self._recover_in -= 1
+        if self._recover_in <= 0:
+            self._connected = True
+            self._recover_in = None""",
+        caught_by=("tests/test_radio.py::"
+                   "test_shape_four_a_disconnect_recovers_after_exactly_the_samples_asked_for"),
+    ),
+    Mutation(
+        id="M11",
+        description=("give Snapshot somewhere to put a coordinate — FR5's guarantee is "
+                     "structural, so the mutation is a field, not a value"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="    position_packets: int",
+        new="""    position_packets: int
+    latitude: float | None = None
+    longitude: float | None = None""",
+        caught_by="tests/test_radio.py::test_a_snapshot_has_nowhere_to_put_a_coordinate",
+    ),
+    Mutation(
+        id="M12",
+        description=("unfreeze Snapshot — a sample that can be rewritten after the fact "
+                     "is not evidence, and a 48h run is where nobody would notice"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="@dataclass(frozen=True, slots=True)",
+        new="@dataclass(slots=True)",
+        caught_by="tests/test_radio.py::test_a_sample_cannot_be_edited_after_it_is_taken",
+    ),
+    Mutation(
+        id="M13",
+        description=("open a socket inside snapshot() — the check on `no test touches "
+                     "the V4`, which is otherwise a rule nothing enforces"),
+        path=ROOT / "src/mesh_client/radio.py",
+        old="        self.samples_taken += 1",
+        new="        import socket as _s; _s.socket(); self.samples_taken += 1",
+        caught_by="tests/test_radio.py::test_a_full_cycle_runs_with_the_network_torn_out",
+    ),
 )
 
 FAILED_LINE = re.compile(r"^FAILED (\S+)", re.M)
