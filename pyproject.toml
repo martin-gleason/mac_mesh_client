@@ -1,0 +1,29 @@
+[project]
+name = "mesh-client"
+version = "0.0.0"
+description = "A desktop Meshtastic client that makes the state of things legible."
+requires-python = ">=3.14"
+
+# `D7` pins the interpreter; `.python-version` carries the exact patch.
+# Only what is actually imported today. `google-api-python-client` (`D11`) arrives
+# with `F1`, `fastapi`/`uvicorn` (`D14`) at the v0.5 gate. A dependency nothing
+# exercises is a dependency nothing checks.
+dependencies = ["meshtastic>=2.7.11"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mesh_client"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# `C1-T2`. Without this pytest does not fire `pytest_assertion_pass`, and
+# `scripts/count_assertions.py` counts assertions that EXECUTED rather than tests
+# that were collected. An exit code cannot show a suite that stopped running.
+enable_assertion_pass_hook = true
