@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Environment — uv writes .venv/.gitignore itself, this is belt and braces
+.venv/
+
+# Secrets never enter the tree (`NFR7`). Credentials live in ~/.config, mode 0600.
+*.pem
+*.key
+credentials.json
+service-account*.json
+token.json
+
+# Soak artefacts — a local fallback log is data, not source (`FR14`)
+soak-*.csv
+soak-*.log
+
+# macOS
+.DS_Store

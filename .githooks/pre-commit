@@ -1,0 +1,21 @@
+#!/bin/sh
+# `C1-T6` — the gates, run AFTER the last edit.
+#
+# Gates satisfied in advance and then edited past are not gates. That is the whole
+# reason this runs at commit time and not on demand.
+#
+# `count_assertions.py --check` runs the suite itself and fails loudly when it is
+# red, so a separate `pytest` line here would run every test twice and prove nothing
+# the count does not already prove. The declared `run` command stays `uv run pytest
+# -q` — that is the capability; this is the gate that uses it.
+#
+# Per-clone: `git config core.hooksPath .githooks`. No commit can carry that setting,
+# so a fresh clone is unprotected until somebody runs it. Stated rather than assumed.
+set -e
+
+echo "pre-commit: gates"
+
+uv run python scripts/count_assertions.py --check
+uv run python scripts/check_secrets.py
+
+echo "pre-commit: pass"
