@@ -24,3 +24,15 @@ soak-*.log
 
 # macOS
 .DS_Store
+
+# Redirect debris — zero-byte files created when prose containing `>` reached an
+# unquoted shell command and zsh read it as a redirection operator. Named here
+# because they were staged once (2026-09-10) and are not source. **Anchored to the
+# repository root with a leading slash**: an unanchored `rc` or `0` would match a
+# legitimately-named file at any depth, and an ignore rule that hides real source is
+# worse than the debris it was written for. Adding a name here does not stop the
+# mechanism — use a heredoc or the file-writing tool, never bare `>` with prose.
+/0
+/rc
+/shipped
+/MISATTRIBUTED,
