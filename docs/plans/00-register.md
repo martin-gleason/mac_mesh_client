@@ -79,7 +79,7 @@ Outstanding items only the owner can close.
 | O8 | **What guards the daemon's own API?** `NFR5`'s three mechanisms defend against shoulder-surfers, strangers on channel 0, and the owner at 11pm. **None defends the interface.** A daemon on localhost holding the PSK is reachable by any process on the Mac and by any web page the owner has open. Token in `~/.config` beside the PSK, or accepted risk with a reason. **`D14` supplies the mechanism (FastAPI dependency injection) and deliberately does not supply the policy.** | v0.5 | P1 | open |
 | O9 | **What shape is the message store, and which clock is authoritative?** SQLite (stdlib, and a good thing to learn) or JSONL. And: the radio's `rxTime` — which can be unset or drifted — or local receive time? Get the clock wrong and history sorts wrong in a way nobody notices for months. | v0.5 | P1 | open |
 | O10 | **Does the daemon tolerate `tools/mesh.py` operating concurrently, or become the sole writer?** The intent says it does not become a gatekeeper; `RR7` is the cost of that. | v0.5 | P1 | open |
-| O11 | **Google Cloud console work needs the owner at the keyboard.** The intent assigns credential plumbing to the agent — service-account creation, API enablement, key placement, sheet permissions — but project creation and billing consent cannot be delegated. | v0.1 | P0 | open |
+| O11 | **Google Cloud console work needs the owner at the keyboard.** Project creation and billing consent cannot be delegated. Concretely, and in order: create a GCP project · enable the Google Sheets API · create a service account and download its JSON key to `~/.config`, mode `0600` · **create the spreadsheet yourself and share it with the service-account address as Editor** (never let the service account create it — the sheet would be owned by a robot and invisible in your Drive) · put the sheet id in `~/.config`, never in the repository. Blocks `F1-T5`, `F1-T6`, `F1-T7`. | v0.1 | P0 | open |
 | ~~O12~~ | ~~**Ratify `docs/specs/mesh-desktop-client.md`.**~~ | `C1` | P0 | **closed 2026-09-10 — gate `G2`.** The owner ratified it as written. The spec is now immutable; amendments are `D<n>` rows. |
 | O13 | **Acknowledge the upstream instruction changes.** `turing-review`'s `H12` reports 4 unacknowledged files after `turing-review:D69` — `conventions.md`, `CLAUDE.md`, `SKILL.md`, `conventions.starter.md`. Acknowledging is the owner's act; an agent that acknowledges its own instruction changes has built a loop with no human in it. | — | P1 | open |
 
@@ -96,6 +96,8 @@ signature failure this discipline exists to stop.
 | G1 | **Intent approved.** `docs/intents/mesh-desktop-client.md` carries status `approved`, which is where this gate is recorded. | 2026-09-10 | closed |
 | G2 | **Spec ratified.** Crossed aloud by the owner — *"spec is approved"* — and written down the same turn. **The requirement baseline froze here at `FR1`–`FR30` and `NFR1`–`NFR9`** (counted from the spec, not asserted: `grep -c '^| \*\*FR' docs/specs/mesh-desktop-client.md` → 30, `NFR` → 9). Every requirement after this is a `D<n>`. | 2026-09-10 | closed |
 | G3 | **`C1` gate — build the harness.** Crossed aloud by the owner — *"begin c1"* — and written down before the first line of code. `docs/plans/C1.md` was written and waiting beforehand, which is the point of the gate: it gave the owner a moment to say *don't build that* while saying so was still cheap. No question was left open at the crossing. | 2026-09-10 | closed |
+| G4 | **`F1` gate — the soak test tool.** `docs/plans/F1.md` is written and waiting. Seven tasks, four of them `owner: human` at 50-50. **No code until this is crossed and written down here.** Five open questions listed in the plan; `D13` is ratified or refused at this gate. | — | open |
+| G5 | **The two-hour dry run.** Fires after `F1` merges, on the owner's authorisation. The first moment real credentials, the real sheet and the real radio are involved at once — auth, permissions, batching and column layout fail in the first ten minutes or not at all. Its outcome is recorded here; it is the entry condition for the 48-hour run, whose result is what the ladder gates v0.5 on. | — | open |
 
 ---
 
@@ -150,7 +152,7 @@ the same caveat inline rather than letting the number imply more than it carries
 | `C1` | Build the harness | chore | `C1` | agent | **built and reviewed 2026-09-10.** Six tasks done, `M1`–`M4` run, every gate proved by breaking it. Adversarial review logged at `docs/reviews/C1.md`: 10 findings, 6 major, all addressed. **Uncommitted** — awaiting the owner. |
 | `C2` | Status page generator | chore | v0.1 | agent | not opened. Upstream `gen_status.py` writes only `turing-review`'s own page; `turing-review:D13` requires this one be generated, so this project needs its own. Plan written at its gate. |
 | `C3` | CI | chore | v0.1 | agent | **open** — unblocked by `D15`. Runs the whole suite plus `count --check`; no hardware needed, because nothing under `tests/` touches the radio. Plan written at its gate. |
-| `F1` | The soak test tool | feature | v0.1 | mixed — see `D1`, `D2` | not opened |
+| `F1` | The soak test tool | feature | v0.1 | mixed — 4 of 7 tasks `human` (`D1`, `D2`) | **planned, awaiting gate `G4`.** `docs/plans/F1.md` written 2026-09-10, nothing built. Blocked on `O11` for its last three tasks. |
 
 -----
 2026-09-10

@@ -16,6 +16,7 @@ dist/
 credentials.json
 service-account*.json
 token.json
+pr-review-log.md
 
 # Soak artefacts — a local fallback log is data, not source (`FR14`)
 soak-*.csv
