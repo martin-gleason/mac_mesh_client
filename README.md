@@ -1,4 +1,4 @@
-# Meshtastic Mac Client
+# Mac Meshtastic Client
 A project to build a chat app for desktop. This project is mostly written by Claude, with key functions in python written by me.
 
 ## Why?
