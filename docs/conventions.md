@@ -1,9 +1,11 @@
 <!-- VENDORED from turing-review/conventions.md — DO NOT EDIT.
-     pinned-sha256: 1a774d4ab09321c5b8bf0104ae30d52e228e83a40596adbe89d50fd71215a8e3
+     pinned-sha256: a781695947a51aaf9d68f16e760e74c9aee764adaad8ef7a8700cd293d79dd81
      Project-local rules belong in docs/conventions-local.md (D24).
      Fix upstream, then re-vendor: python3 scripts/vendor.py <project> -->
 
 # Conventions — baseline
+
+Created: 2026-08-30 10:40 -05:00 · Edited: 2026-09-24 08:24 -05:00
 
 **This file is the source of truth.** A project vendors a pinned copy to
 `docs/conventions.md` and `@import`s the local copy, so the project stays viable in a
@@ -62,11 +64,12 @@ rule so that every register invented later inherits it without a new argument.
 | `D<N>` | **Decisions** | Every proposed and ratified change to the spec. ADR-style. |
 | `RR<N>` | **Risks** | Risk register: risk, likelihood, impact, mitigation, owner. |
 | `O<N>` | **Owner items** | Outstanding items only the owner can close. |
+| `A<N>` | **Agent items** | Outstanding items only the agent can close — defects in its own work, findings it owes a fix. The mirror of `O`. |
 | `H<N>` | **Hooks** | Enforcement mechanisms, traced *spec invariant → mechanism → owning task*. |
-| `M<N>` | **Mutations** | Named ways to break the code, each paired with the test that must catch it. |
+| `M<N>` | **Mutations** | Named ways to break the code, each paired with the test that must catch it, and a `Run`: `run`, `escaped` or `proposed`. |
 | `FR<N>` / `NFR<N>` | **Requirements** | Functional and non-functional. **Stated in `SPEC.md`** — they are the baseline. |
 
-`D` · `RR` · `O` · `H` · `M` live in **`docs/plans/00-register.md`**, one `##` per
+`D` · `RR` · `O` · `A` · `H` · `M` live in **`docs/plans/00-register.md`**, one `##` per
 register, so a single read gives the state of the project.
 
 **Every row carries a status.** A register row without one is invalid, not "probably open."
@@ -185,6 +188,41 @@ lives in the register.
 
 **Documents are separated by lifecycle, not by topic.** Things that change at the same
 rate, for the same reason, by the same hand, belong in the same file.
+
+### Write short, in plain words
+
+**Ratified 2026-09-24 by the owner (`D75`):** *"Turing 2.0 MUST be succinct and use plain
+language for these documents. I have spent more time working on documentation than on
+actual coding or testing."*
+
+- **A register row is one or two sentences:** what it is, and where the detail lives. The
+  row is not a history. Corrections go in git, not in the cell.
+- **A row must make sense without opening another file.** If it needs detail, link one
+  file, once.
+- **Plain words.** No all-caps paragraphs. Bold marks the one thing to notice, not every
+  clause.
+- **A number comes from a command or a generated page,** never typed into prose (`D68`).
+- **Before writing a document, ask who will act on it.** If nobody will, do not write it.
+  Time goes to code and tests.
+
+### Every file says when it was made and last edited
+
+**Ratified 2026-09-24 by the owner (`D76`):** *"At the beginning of all documents going
+forward, we need a date and time of when something was created and when it was edited …
+I want this also in comments in all code going forward."*
+
+One line near the top — under the title in markdown, a comment on line 1 in code:
+
+    Created: 2026-09-24 08:22 -05:00 · Edited: 2026-09-24 09:40 -05:00
+
+`python3 scripts/stamp.py <file>` writes it: Created from git's first commit of the file,
+Edited as now. The pre-commit hook (`H15`) refuses a staged file with no stamp, or one whose
+Edited is older than its last commit. Exempt: generated files (a clock would break their
+`--check`) and a vendored `docs/conventions.md`. Existing files get a stamp the next time
+they are edited.
+
+**What it measures:** Edited minus Created is elapsed time, not effort. Git keeps every
+edit; the stamp puts the span where a reader sees it.
 
 ### Intent comes before the spec, and it is where the problem is written down
 
@@ -394,6 +432,27 @@ Every rule below is here because a run of this review produced the number beside
 Spec authority stays with the owner. The agent proposes deltas; the owner ratifies.
 **The agent never edits the contract it is held to.**
 
+### How sessions go wrong, and the check for each
+
+**Ratified 2026-09-24 (`D74`).** Promoted from ZenPom's sessions of 2026-09-15 and 16
+(`ZenTomato/docs/handoffs/turing-v2.md` and `blockersfor1_5.md` §5). Most are one failure:
+something was believed because it was in front of the reader, and nothing had tested it.
+
+| Failure | Check |
+|---|---|
+| A stale auto-loaded file (`CLAUDE.md`) is believed over the spec | At session start, read every file in `docs/specs/` before saying anything about scope. When documents disagree, say so. |
+| The work already exists on another branch or PR | Before starting a unit or taking an ID: `git branch -a`, `gh pr list --state all`, `git log --all --grep '<ID>'`. |
+| An ID is cited before the thing it names exists | The definition and its citations land in one change, or the definition merges first. |
+| The owner answers, and the agent asks again | Name a blocking rule once. When the owner says do it, do it, and record the waiver in the commit. |
+| A wrapper's exit code is reported as the test result | Quote the run's own summary line and counts. |
+| A file says "generated" and nothing generates it | Its header names the command, and the command runs. |
+| Two files hold the same list | Generate one from the other, or delete one. Merging two hand-kept files into one does not stop drift. |
+| A fix guards a trigger that cannot happen yet | Name the trigger from today's inputs. If it needs an unbuilt feature, the fix belongs to that feature. |
+| A generator makes a wrong source look official | Validate the source in the same change that starts generating from it. |
+| A reviewer's headline number is repeated unchecked | Before reporting, re-run the claims the conclusion rests on. |
+| An ID is first written in a commit message | Allocate IDs in a file the next writer reads. Nobody can search commit messages for what is taken. |
+| A handoff states a number | Give the command that produced it. Correct a wrong entry in place and leave the error visible. |
+
 ### Write the plan before you write the code, and wait
 
 **Reaffirmed 2026-08-27 by the owner, after the agent had been quietly skipping it.** The
@@ -581,6 +640,18 @@ suite has been *seen* to fail, with the count recorded. `caught at 446/447` is e
 The rule that follows: **a test that has never been shown to fail is not evidence.** At least one
 mutation per behaviour the tests are supposed to protect, recorded as `M<n>` with the named test
 that catches it.
+
+### A mutation's Run says what actually happened
+
+**Ratified 2026-09-24 (`D73`),** from ZenPom. Every mutation row carries one of three:
+
+- **`run`** — applied to shipped code, the named test went red, the code was restored.
+- **`escaped`** — applied, and the named test stayed green. Keep the row: it is a finding
+  until the test is fixed and the mutation passes a re-run.
+- **`proposed`** — named in a plan, not applied yet.
+
+A mutation is `run` only when something recorded it failing. "Will be run before done" is
+`proposed`.
 
 -----
 2026-08-30
