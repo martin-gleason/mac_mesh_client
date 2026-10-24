@@ -1,4 +1,4 @@
-// Created: 2026-10-24 11:45 -05:00 · Edited: 2026-10-24 11:45 -05:00
+// Created: 2026-10-24 09:44 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `C4-T6`, ported from `scripts/check_secrets.py`. Refuse a commit that carries a credential.
 // `NFR7` · `RR8`. Git remembers whatever lands here, so a later deletion does not undo it.
@@ -31,13 +31,17 @@ enum Secrets {
     ].map { ($0.0, try! NSRegularExpression(pattern: $0.1)) }
 
     static func main(root: URL) -> Int32 {
-        let staged = Shell.run(["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"], in: root)
+        // NUL-separated, so git does not quote a non-ASCII name into a path `git show`
+        // cannot find. `C4` review, finding 4.
+        let staged = Shell.run(["git", "diff", "--cached", "--name-only", "-z", "--diff-filter=ACM"], in: root)
         guard staged.status == 0 else { return fail("secrets: could not list staged files:\n\(staged.output)") }
 
         var findings: [String] = []
-        for path in staged.output.split(separator: "\n").map(String.init) {
+        for path in staged.output.split(separator: "\0").map(String.init) {
             // Lossy decoding, so a staged binary cannot abort the scan of everything after it.
-            let content = Shell.run(["git", "show", ":\(path)"], in: root).output
+            let shown = Shell.run(["git", "show", ":\(path)"], in: root)
+            guard shown.status == 0 else { return fail("secrets: could not read staged \(path) — refusing rather than skipping it") }
+            let content = shown.output
             for (index, line) in content.components(separatedBy: "\n").enumerated() where !line.contains(marker) {
                 let range = NSRange(line.startIndex..., in: line)
                 for (label, regex) in patterns where regex.firstMatch(in: line, range: range) != nil {

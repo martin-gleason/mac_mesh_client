@@ -1,6 +1,6 @@
 # CLAUDE.md — Mesh Desktop Client
 
-Created: 2026-09-10 15:33 -05:00 · Edited: 2026-10-24 09:12 -05:00
+Created: 2026-09-10 15:01 -05:00 · Edited: 2026-10-24 10:11 -05:00
 
 A desktop Meshtastic client that makes the state of things legible — the health of the
 client, the health of the network, who you are talking to, and whether your message
@@ -161,8 +161,8 @@ on by the owner typing them; **the agent invokes none of the three.**
 
 Deterministic; this file's prose is advisory. `H<n>` labels are register-local and never
 appear in a commit, branch or PR title. **The register is the authority on each hook's
-status** — `H1`–`H6` are built and each has been proved by breaking it; `H7`–`H8` are
-not built.
+status** — `H1`–`H6` are rebuilt in Swift (`C4`) and each proved by breaking it;
+`H7`–`H8` are not built.
 
 **Prove every hook by breaking it first.** A hook that has never failed is a hook nobody
 knows works.

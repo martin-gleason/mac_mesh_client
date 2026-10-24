@@ -1,4 +1,4 @@
-// Created: 2026-10-24 11:15 -05:00 · Edited: 2026-10-24 11:15 -05:00
+// Created: 2026-10-24 09:41 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // The byte budget for one Meshtastic message. `FR17` · `D5`.
 //

@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// Created: 2026-10-24 10:30 -05:00 · Edited: 2026-10-24 10:30 -05:00
+// Created: 2026-10-24 09:36 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `C4` · `D25`. One package. Directories are lowercase (`docs/conventions.md`), so every
 // target names its path rather than relying on SwiftPM's capitalised defaults.
