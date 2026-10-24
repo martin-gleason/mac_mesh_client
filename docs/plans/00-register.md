@@ -189,7 +189,7 @@ the same caveat inline rather than letting the number imply more than it carries
 | `C1` | Build the harness | chore | `C1` | agent | **built and reviewed 2026-09-10.** Six tasks done, `M1`–`M4` run, every gate proved by breaking it. Adversarial review logged at `docs/reviews/C1.md`: 10 findings, 6 major, all addressed. **Merged 2026-09-10** as PR #1, rebase-and-merge, `main` at `e81a310`. |
 | `C2` | Status page generator | chore | v0.1 | agent | not opened. Upstream `gen_status.py` writes only `turing-review`'s own page; `turing-review:D13` requires this one be generated, so this project needs its own. Plan written at its gate. |
 | `C3` | CI | chore | v0.1 | agent | **open** — unblocked by `D15`. Runs the whole suite plus `count --check`; no hardware needed, because nothing under `tests/` touches the radio. Plan written at its gate. |
-| `C4` | Rebuild the harness in Swift (`D21`) | chore | v0.1 | agent | **gate `G6` crossed 2026-10-24; in build.** `docs/plans/C4.md`. |
+| `C4` | Rebuild the harness in Swift (`D21`) | chore | v0.1 | agent | **built and reviewed 2026-10-24.** 7 tasks; review: 2 major, 5 minor, all closed or recorded (`docs/reviews/C4.md`). Not yet merged. |
 | `F1` | The soak test tool | feature | v0.1 | mixed — 4 of 7 tasks `human` (`D1`, `D2`) | **in build. `G4` closed 2026-09-10.** `F1-T1` done: `src/mesh_client/radio.py`, 19 tests, `M5`–`M13` run and seen to fail, floor 43 → 86. **`F1-T2`–`F1-T6` are `owner: human` and not the agent's to write** — `F1-T2` gets scaffold and tests, the rest tests only (`D2`). `F1-T7` still blocked on `O11`. |
 
 -----
