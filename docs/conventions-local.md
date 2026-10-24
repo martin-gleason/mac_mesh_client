@@ -1,5 +1,7 @@
 # Conventions — Mesh Desktop Client, local
 
+Created: 2026-09-10 · Edited: 2026-10-24 11:55 -05:00
+
 Rules true of **this project only**. The inherited baseline is the pinned copy in
 `docs/conventions.md`, which is never edited (`turing-review:D24`). A rule here that turns
 out to be true of every project gets **promoted upstream** — a visible move, on the record,
@@ -9,19 +11,21 @@ rather than the same paragraph appearing in fourteen files.
 
 ## Harness
 
-Declared per `turing-review:F8`. The process ships the **contract**, never a harness — a
-shipped harness would be one language's and worth nothing to the others. These commands are
-`C1`'s deliverable and **do not exist yet**; `check_harness.py --run` will fail until they
-do, which is the intended behaviour and not a defect to route around.
+Declared per `turing-review:F8`. The process ships the **contract**, never a harness.
+Rebuilt in Swift under `C4` (`D21`, `D25`–`D27`).
 
-- run: `uv run pytest -q`
-- count: `uv run python scripts/count_assertions.py`
+- run: `swift test`
+- count: `swift run harness count`
 - floor: `tests/FLOOR`
-- mutate: `uv run python scripts/mutate.py`
+- mutate: `swift run harness mutate`
 - precommit: `.githooks/pre-commit`
 
+**Until `F1-T1` is rebuilt in Swift**, `radio.py` is the last Python behaviour, and the
+pre-commit also runs `uv run python scripts/count_assertions.py --check` against
+`tests/FLOOR.python`.
+
 **Why `count` is separate from `run`.** An exit code cannot show a suite that stopped
-running. A module-level `sys.exit(0)` exits clean having asserted nothing. The count is what
+running. A test that returns early exits clean having checked nothing. The count is what
 catches that, and it counts assertions that **executed**, not tests collected.
 
 **`precommit` runs after the last edit.** Gates satisfied in advance and then edited past
