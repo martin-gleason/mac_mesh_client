@@ -1,0 +1,9 @@
+Created: 2026-10-24 11:00 -05:00 · Edited: 2026-10-24 11:00 -05:00
+
+Vendored from https://github.com/meshtastic/protobufs (GPL-3.0, see LICENSE here)
+tag:    v2.7.26  (the V4's firmware version)
+commit: da60cee584c6dc1efbb4a3809b98666505179b85
+
+`D28`. Copied unmodified. The Swift in sources/meshkitcore/generated/ is produced from
+these files by `swift run harness protos --write`, and `harness protos` fails if the
+committed Swift does not match what the generator produces from them.
