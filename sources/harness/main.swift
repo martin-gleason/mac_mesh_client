@@ -1,4 +1,4 @@
-// Created: 2026-10-24 10:30 -05:00 · Edited: 2026-10-24 11:30 -05:00
+// Created: 2026-10-24 10:30 -05:00 · Edited: 2026-10-24 11:45 -05:00
 //
 // `C4`. The harness, in Swift (`D21`). One executable, one subcommand per capability:
 //
@@ -6,6 +6,8 @@
 //     swift run harness count --check    # and hold it to tests/FLOOR
 //     swift run harness protos           # generated protobufs match the vendored .proto files
 //     swift run harness mutate           # break the code on purpose; the named test must go red
+//     swift run harness secrets          # nothing credential-shaped in the staged content
+//     swift run harness commit-msg FILE  # no register ID in a commit subject
 //
 // Tooling only — never linked into an app.
 
@@ -23,8 +25,12 @@ case "protos":
     status = Protos.main(args, root: root)
 case "mutate":
     status = Mutate.main(args, root: root)
+case "secrets":
+    status = Secrets.main(root: root)
+case "commit-msg":
+    status = CommitMessage.main(args)
 default:
-    FileHandle.standardError.write(Data("harness: unknown command '\(command)'. Try: count, protos, mutate\n".utf8))
+    FileHandle.standardError.write(Data("harness: unknown command '\(command)'. Try: count, protos, mutate, secrets, commit-msg\n".utf8))
     status = 2
 }
 exit(status)
