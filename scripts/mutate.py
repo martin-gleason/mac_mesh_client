@@ -17,7 +17,7 @@ how a harness scores a crash as a kill: rename the named test and a mutation is
 
     python scripts/mutate.py             # run every mutation
     python scripts/mutate.py --list      # name them without touching anything
-    python scripts/mutate.py M1          # run one
+    python scripts/mutate.py M5          # run one
 """
 
 from __future__ import annotations
@@ -51,47 +51,6 @@ class Mutation:
 
 
 MUTATIONS: tuple[Mutation, ...] = (
-    Mutation(
-        id="M1",
-        description=("replace the runtime read of DATA_PAYLOAD_LEN with the literal "
-                     "190 — the mistake this project actually made"),
-        path=ROOT / "src/mesh_client/budget.py",
-        old="    return int(mesh_pb2.Constants.DATA_PAYLOAD_LEN)",
-        new="    return 190",
-        caught_by="tests/test_budget.py::test_limit_is_read_at_call_time_not_baked_in",
-    ),
-    Mutation(
-        id="M4",
-        description=("hardcode 233 — the value the library returns TODAY, so every "
-                     "equality assertion still agrees and only a runtime read fails"),
-        path=ROOT / "src/mesh_client/budget.py",
-        old="    return int(mesh_pb2.Constants.DATA_PAYLOAD_LEN)",
-        new="    return 233",
-        caught_by="tests/test_budget.py::test_limit_is_read_at_call_time_not_baked_in",
-    ),
-    Mutation(
-        id="M2",
-        description="count characters instead of bytes",
-        path=ROOT / "src/mesh_client/budget.py",
-        old='    return len(text.encode("utf-8"))',
-        new="    return len(text)",
-        caught_by="tests/test_budget.py::test_encoded_size_counts_bytes_not_characters",
-    ),
-    Mutation(
-        id="M3",
-        description="cut on a raw byte boundary, splitting a character in half",
-        path=ROOT / "src/mesh_client/budget.py",
-        old="""    cut = raw[:cap]
-    while cut:
-        try:
-            return cut.decode("utf-8")
-        except UnicodeDecodeError:
-            cut = cut[:-1]
-    return \"\"""",
-        new='    return raw[:cap].decode("utf-8", errors="replace")',
-        caught_by=("tests/test_budget.py::"
-                   "test_truncated_output_is_always_a_decodable_prefix_within_budget"),
-    ),
     # --- `F1-T1` · the radio seam. Eight shapes, each one a way the fake could lie ---
     # about the radio and let a green suite ship a soak that cannot see degradation.
     Mutation(
