@@ -130,12 +130,12 @@ and that is stated rather than assumed.
 
 | ID | Hook | Surface | Protects | Status |
 |---|---|---|---|---|
-| H1 | suite runs; count of **executed** assertions reported | `C1` run + count | an exit code cannot show a suite that stopped running | **built, proved.** `count: pass — 43 assertion(s) executed`. Proved by removing `enable_assertion_pass_hook` → `0`, rc 1. |
-| H2 | count may not fall below a floor | `C1` floor | a shrinking suite is blind, not clean | **built, proved.** Proved twice: floor raised to 999 → rc 1; a test deleted, 34 vs 38 → rc 1. |
-| H3 | at least one named mutation per protected behaviour | `C1` mutate | `NFR8` | **built, proved.** 4 of 4 caught. Proved by renaming a named test → `MISATTRIBUTED`, rc 1. |
-| H4 | gates run **after** the last edit | `C1` pre-commit | gates satisfied in advance and then edited past are not gates | **built, proved.** Fires on a real `git commit`; refused a staged credential and created no commit. |
-| H5 | no secret in the diff | pre-commit | `NFR7`, `RR8` | **built, proved.** Refused a staged service-account key and six PSK shapes the first version missed. |
-| H6 | no register ID in a commit subject | commit-msg | the two-tier ID grammar | **built, proved.** Refused `feat(C1): D5 harness` on a real `git commit`; 10 accept/reject cases verified. |
+| H1 | suite runs; count of **executed** checks reported | `C4` `harness count` | an exit code cannot show a suite that stopped running | **built in Swift, proved 2026-10-24.** A loop of three plus an early return counted 4 (by hand 4); checks in comments, strings and `#if false` are not counted (probe: 66, by hand 66). A red suite is refused. Python `count_assertions.py` still guards `radio.py`. |
+| H2 | count may not fall below a floor | `C4` `tests/FLOOR` | a shrinking suite is blind, not clean | **built in Swift, proved 2026-10-24.** A deleted test failed at 1 vs 4; two checks inside `/* */` failed at 59 vs 61; a real `git commit` with floor 62 at 61 was refused. |
+| H3 | at least one named mutation per protected behaviour | `C4` `harness mutate` | `NFR8` | **built in Swift, proved 2026-10-24.** 6 of 6 caught. With the named test renamed, the mutation was reported escaped although two other tests went red. |
+| H4 | gates run **after** the last edit | `C4` pre-commit | gates satisfied in advance and then edited past are not gates | **built, proved 2026-10-24.** A real `git commit` with floor 62 was refused and HEAD did not move. |
+| H5 | no secret in the diff | `C4` `harness secrets` | `NFR7`, `RR8` | **built in Swift, proved 2026-10-24.** Refused a staged PSK and PEM header, and a PSK in a file named `clé.env` (which the Python version missed). Same findings as the Python original on 21 lines (review). |
+| H6 | no register ID in a commit subject | `C4` `harness commit-msg` | the two-tier ID grammar | **built in Swift, proved 2026-10-24.** Refused `feat(C4): D5 harness` and a non-conventional subject; same verdict as the Python original on 21 of 23 subjects, stricter on the other two (review). |
 | H7 | status page regenerates clean | `C2` | it cannot go stale | not built |
 | H8 | every `FR` has a test; every test cites an `FR` or `D` | `C2` | drift, in both directions | not built |
 
@@ -171,8 +171,10 @@ was **seen** to fail — which is what `closed` means on these rows.
 | M14 | run | `M1` in Swift: hardcode `190` for the protocol limit. | `theProtocolLimitIsNotTheUnsourced190` | caught 2026-10-24 — 2 of 12 tests red |
 | M15 | run | `M2` in Swift: count characters instead of bytes. | `encodedSizeCountsBytesNotCharacters` | caught 2026-10-24 — 4 of 12 red |
 | M16 | run | `M3` in Swift: cut on a raw byte boundary, splitting a character. | `truncatedOutputIsAlwaysAWholeCharacterPrefixWithinBudget` | caught 2026-10-24 — 3 of 12 red |
-| M17 | run | `M4` in Swift: measure against a literal `233` instead of the budget's own limit. A literal inside `protocolLimit` itself cannot be caught by a test while the generated constant is also 233; `harness protos` guards that. | `theBudgetUsesTheLimitItWasGivenNotALiteral` | caught 2026-10-24 — 1 of 12 red |
+| M17 | run | `M4` in Swift, partly: measure against a literal `233` instead of the budget's own limit. The real `M4` — a literal inside `protocolLimit` — is `M20`. | `theBudgetUsesTheLimitItWasGivenNotALiteral` | caught 2026-10-24 — 1 of 13 red |
 | M18 | run | Cut between Unicode scalars instead of whole characters — half a flag goes out. | `truncateNeverSendsHalfAFlag` | caught 2026-10-24 — 2 of 12 red |
+| M19 | run | Hardcode `233` in `protocolLimit`, then a firmware bump moves `mesh.proto` to 240 — the literal stays behind. | `theProtocolLimitMatchesTheVendoredProtoFile` | caught 2026-10-24 — 1 of 13 red |
+| M20 | escaped | Hardcode `233` in `protocolLimit` while the proto still says 233. Every gate passes: no test can tell a literal from the constant while both are 233. Caught the day the proto moves (`M19`). Found by the `C4` review. | — | escaped 2026-10-24; accepted until someone finds a check that can tell them apart |
 
 **The counts above are tests, not assertions** — stated because the convention's `caught at
 446/447` form implies assertion counts and these are not that. `scripts/mutate.py` prints

@@ -1,4 +1,4 @@
-// Created: 2026-10-24 10:45 -05:00 · Edited: 2026-10-24 10:45 -05:00
+// Created: 2026-10-24 09:38 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `C4-T2` · `D27`. Count the checks that actually EXECUTED, and hold them to a floor.
 //
@@ -62,13 +62,17 @@ enum Count {
     /// Sum, over every `#expect(`/`#require(` in a test file, the number of times its position ran.
     static func executedChecks(coverageJSON: URL, testsDirectory: URL) throws -> Int {
         let report = try JSONDecoder().decode(Report.self, from: Data(contentsOf: coverageJSON))
-        let prefix = testsDirectory.standardizedFileURL.path + "/"
+        // Both sides through realpath: llvm-cov reports `/private/tmp/…` where Foundation
+        // may say `/tmp/…`, and a prefix that never matches counts zero.
+        let prefix = realPath(testsDirectory.path) + "/"
         var total = 0
-        for file in report.data.flatMap(\.files) where file.filename.hasPrefix(prefix) {
+        for file in report.data.flatMap(\.files) where realPath(file.filename).hasPrefix(prefix) {
             let source = try String(contentsOfFile: file.filename, encoding: .utf8)
-            for (index, line) in source.components(separatedBy: "\n").enumerated() {
-                let code = line.components(separatedBy: "//").first ?? ""
-                for column in checkColumns(in: code) {
+            // Comments, strings and `#if false` blanked first: text the compiler never
+            // sees is not a check, and a `//` inside a string must not hide one.
+            let code = String(decoding: CodeMask.mask(source), as: UTF8.self)
+            for (index, line) in code.components(separatedBy: "\n").enumerated() {
+                for column in checkColumns(in: line) {
                     total += executions(at: (index + 1, column), in: file.segments)
                 }
             }
@@ -94,6 +98,12 @@ enum Count {
         let active = segments.last { ($0.line, $0.column) <= position }
         guard let active, active.hasCount else { return 0 }
         return active.count
+    }
+
+    static func realPath(_ path: String) -> String {
+        guard let resolved = realpath(path, nil) else { return path }
+        defer { free(resolved) }
+        return String(cString: resolved)
     }
 
     static func value(after flag: String, in args: [String]) -> String? {

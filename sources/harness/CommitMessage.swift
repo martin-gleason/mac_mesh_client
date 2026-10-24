@@ -1,4 +1,4 @@
-// Created: 2026-10-24 11:45 -05:00 · Edited: 2026-10-24 11:45 -05:00
+// Created: 2026-10-24 09:44 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `C4-T6`, ported from `scripts/check_commit_msg.py`. Refuse a register ID in a commit subject.
 //

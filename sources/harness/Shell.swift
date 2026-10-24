@@ -1,4 +1,4 @@
-// Created: 2026-10-24 10:45 -05:00 · Edited: 2026-10-24 10:45 -05:00
+// Created: 2026-10-24 09:38 -05:00 · Edited: 2026-10-24 10:09 -05:00
 import Foundation
 
 /// Run a command to completion and capture what it printed.

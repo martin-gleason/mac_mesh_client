@@ -1,10 +1,11 @@
-// Created: 2026-10-24 11:15 -05:00 · Edited: 2026-10-24 11:15 -05:00
+// Created: 2026-10-24 09:41 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `FR17` · `D5` — the byte budget, ported from `tests/test_budget.py` (`C4-T4`).
 //
 // Every fixture that touches encoding is **multi-byte on purpose**. A pure-ASCII string
 // satisfies both a byte budget and a character count, so it distinguishes nothing.
 
+import Foundation
 import Testing
 @testable import MeshKitCore
 
@@ -97,4 +98,14 @@ let flag = "🇺🇸"
     #expect(throws: BudgetError.negativeBudget(-1)) {
         try PayloadBudget().truncate("anything", to: -1)
     }
+}
+
+@Test func theProtocolLimitMatchesTheVendoredProtoFile() throws {
+    // An independent source: the `.proto` text itself, not the generated Swift. A literal
+    // that agrees with today's protocol passes; the day a firmware bump moves the proto,
+    // the literal stays behind and this goes red. `C4` review, finding 1.
+    let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+    let proto = try String(contentsOf: repo.appending(path: "protos/meshtastic/mesh.proto"), encoding: .utf8)
+    let declared = try #require(proto.firstMatch(of: /DATA_PAYLOAD_LEN\s*=\s*(\d+)\s*;/).flatMap { Int($0.1) })
+    #expect(PayloadBudget.protocolLimit == declared)
 }

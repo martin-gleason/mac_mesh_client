@@ -1,4 +1,4 @@
-// Created: 2026-10-24 11:30 -05:00 · Edited: 2026-10-24 11:30 -05:00
+// Created: 2026-10-24 09:42 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `C4-T5`. Break the shipped code on purpose and require the suite to notice.
 //
@@ -16,13 +16,29 @@
 
 import Foundation
 
-struct Mutation {
-    let id: String
-    let description: String
+struct Edit {
     let path: String
     let old: String
     let new: String
+}
+
+struct Mutation {
+    let id: String
+    let description: String
+    let edits: [Edit]
     let caughtBy: String
+
+    init(id: String, description: String, path: String, old: String, new: String, caughtBy: String) {
+        self.init(id: id, description: description, edits: [Edit(path: path, old: old, new: new)], caughtBy: caughtBy)
+    }
+
+    /// More than one edit, for a failure that needs two things to go wrong at once.
+    init(id: String, description: String, edits: [Edit], caughtBy: String) {
+        self.id = id
+        self.description = description
+        self.edits = edits
+        self.caughtBy = caughtBy
+    }
 }
 
 // Every file this process has mutated and not yet put back. A signal handler cannot
@@ -94,6 +110,17 @@ enum Mutate {
                     }
             """,
             caughtBy: "truncateNeverSendsHalfAFlag"),
+        Mutation(
+            id: "M19", description: "hardcode 233, then a firmware bump moves the protocol to 240 — the literal stays behind",
+            edits: [
+                Edit(path: budget,
+                     old: "public static var protocolLimit: Int { Constants.dataPayloadLen.rawValue }",
+                     new: "public static var protocolLimit: Int { 233 }"),
+                Edit(path: "protos/meshtastic/mesh.proto",
+                     old: "  DATA_PAYLOAD_LEN = 233;",
+                     new: "  DATA_PAYLOAD_LEN = 240;"),
+            ],
+            caughtBy: "theProtocolLimitMatchesTheVendoredProtoFile"),
     ]
 
     static func main(_ args: [String], root: URL) -> Int32 {
@@ -109,21 +136,23 @@ enum Mutate {
 
         var escaped: [String] = []
         for m in chosen {
-            let path = root.appending(path: m.path).path
-            guard let original = try? String(contentsOfFile: path, encoding: .utf8) else {
-                return fail("mutate: cannot read \(m.path)")
-            }
-            let occurrences = original.components(separatedBy: m.old).count - 1
-            guard occurrences == 1 else {
-                return fail("mutate: \(m.id) — expected the target text once in \(m.path), found \(occurrences). "
-                    + "The shipped code moved; update the mutation, do not skip it.")
-            }
-            pendingRestore[path] = original
             defer { restorePending() }
-            do {
-                try original.replacingOccurrences(of: m.old, with: m.new).write(toFile: path, atomically: true, encoding: .utf8)
-            } catch {
-                return fail("mutate: could not write \(m.path): \(error)")
+            for edit in m.edits {
+                let path = root.appending(path: edit.path).path
+                guard let original = try? String(contentsOfFile: path, encoding: .utf8) else {
+                    return fail("mutate: cannot read \(edit.path)")
+                }
+                let occurrences = original.components(separatedBy: edit.old).count - 1
+                guard occurrences == 1 else {
+                    return fail("mutate: \(m.id) — expected the target text once in \(edit.path), found \(occurrences). "
+                        + "The shipped code moved; update the mutation, do not skip it.")
+                }
+                pendingRestore[path] = original
+                do {
+                    try original.replacingOccurrences(of: edit.old, with: edit.new).write(toFile: path, atomically: true, encoding: .utf8)
+                } catch {
+                    return fail("mutate: could not write \(edit.path): \(error)")
+                }
             }
 
             let run = Shell.run(["swift", "test"], in: root)
@@ -141,10 +170,11 @@ enum Mutate {
         }
         // Read back what was restored, rather than trusting the write.
         for m in chosen {
-            let path = root.appending(path: m.path).path
-            let now = (try? String(contentsOfFile: path, encoding: .utf8)) ?? ""
-            if now.contains(m.new) && !now.contains(m.old) {
-                return fail("mutate: \(m.path) still carries \(m.id) — restore from git now")
+            for edit in m.edits {
+                let now = (try? String(contentsOfFile: root.appending(path: edit.path).path, encoding: .utf8)) ?? ""
+                if now.contains(edit.new) && !now.contains(edit.old) {
+                    return fail("mutate: \(edit.path) still carries \(m.id) — restore from git now")
+                }
             }
         }
         if !escaped.isEmpty { return fail("mutate: FAIL — \(escaped.joined(separator: ", ")) not caught") }

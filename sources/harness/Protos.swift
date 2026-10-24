@@ -1,4 +1,4 @@
-// Created: 2026-10-24 11:05 -05:00 · Edited: 2026-10-24 11:05 -05:00
+// Created: 2026-10-24 09:39 -05:00 · Edited: 2026-10-24 10:09 -05:00
 //
 // `C4-T3` · `D28`. The committed Swift must be exactly what the generator makes from the
 // vendored `.proto` files — otherwise a hand edit, or a stale regeneration, ships silently.

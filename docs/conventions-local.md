@@ -1,6 +1,6 @@
 # Conventions — Mesh Desktop Client, local
 
-Created: 2026-09-10 · Edited: 2026-10-24 11:55 -05:00
+Created: 2026-09-10 15:01 -05:00 · Edited: 2026-10-24 10:09 -05:00
 
 Rules true of **this project only**. The inherited baseline is the pinned copy in
 `docs/conventions.md`, which is never edited (`turing-review:D24`). A rule here that turns
