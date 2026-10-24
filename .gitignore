@@ -36,3 +36,7 @@ soak-*.log
 /rc
 /shipped
 /MISATTRIBUTED,
+
+# Swift
+.build/
+.swiftpm/
