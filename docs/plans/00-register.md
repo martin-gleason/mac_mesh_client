@@ -168,10 +168,11 @@ was **seen** to fail — which is what `closed` means on these rows.
 | M11 | closed | Give `Snapshot` somewhere to put a coordinate. **`FR5`'s guarantee is structural, so the mutation is a field rather than a value** — there is no wrong coordinate to write, only a place to put one. | `tests/test_radio.py::test_a_snapshot_has_nowhere_to_put_a_coordinate` | caught, `1 failed, 29 passed` |
 | M12 | closed | Unfreeze `Snapshot`. A sample that can be rewritten after the fact is not evidence, and a 48-hour run is where nobody would notice. | `tests/test_radio.py::test_a_sample_cannot_be_edited_after_it_is_taken` | caught, `1 failed, 29 passed` |
 | M13 | closed | Open a socket inside `snapshot()`. The check on *no test touches the V4* — otherwise a rule in a conventions file with nothing enforcing it. | `tests/test_radio.py::test_a_full_cycle_runs_with_the_network_torn_out` | caught, `1 failed, 29 passed` |
-| M14 | proposed | `M1` in Swift: hardcode `190` for the payload limit. | named at `C4-T5` | — |
-| M15 | proposed | `M2` in Swift: count characters instead of bytes. | named at `C4-T5` | — |
-| M16 | proposed | `M3` in Swift: cut on a raw byte boundary, splitting a character. | named at `C4-T5` | — |
-| M17 | proposed | `M4` in Swift: hardcode `233`. | named at `C4-T5` | — |
+| M14 | run | `M1` in Swift: hardcode `190` for the protocol limit. | `theProtocolLimitIsNotTheUnsourced190` | caught 2026-10-24 — 2 of 12 tests red |
+| M15 | run | `M2` in Swift: count characters instead of bytes. | `encodedSizeCountsBytesNotCharacters` | caught 2026-10-24 — 4 of 12 red |
+| M16 | run | `M3` in Swift: cut on a raw byte boundary, splitting a character. | `truncatedOutputIsAlwaysAWholeCharacterPrefixWithinBudget` | caught 2026-10-24 — 3 of 12 red |
+| M17 | run | `M4` in Swift: measure against a literal `233` instead of the budget's own limit. A literal inside `protocolLimit` itself cannot be caught by a test while the generated constant is also 233; `harness protos` guards that. | `theBudgetUsesTheLimitItWasGivenNotALiteral` | caught 2026-10-24 — 1 of 12 red |
+| M18 | run | Cut between Unicode scalars instead of whole characters — half a flag goes out. | `truncateNeverSendsHalfAFlag` | caught 2026-10-24 — 2 of 12 red |
 
 **The counts above are tests, not assertions** — stated because the convention's `caught at
 446/447` form implies assertion counts and these are not that. `scripts/mutate.py` prints

@@ -40,3 +40,4 @@ soak-*.log
 # Swift
 .build/
 .swiftpm/
+*.profraw
